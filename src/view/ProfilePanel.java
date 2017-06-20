@@ -3,6 +3,7 @@ package view;
 
 import com.toedter.calendar.JDateChooser;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -79,8 +80,9 @@ public class ProfilePanel extends JPanel {
         
         
         profileImage = resizeImage(profileImage);
-        profileLabel.setBorder(BorderFactory.createEtchedBorder());
+        profileLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         profileLabel.setIcon(profileImage);
+        profileLabel.setToolTipText("Right click for options.");
         profileLabel.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
@@ -100,13 +102,17 @@ public class ProfilePanel extends JPanel {
             typeModel.addElement(type);
         }
         typeCombo.setModel(typeModel);
+        typeCombo.setPrototypeDisplayValue("XXXXXXXXXXXXXXXXX");
         
         DefaultComboBoxModel deptModel = new DefaultComboBoxModel();
         for(Department dept : Department.values()) {
             deptModel.addElement(dept);
         }
         deptCombo.setModel(deptModel);
+        deptCombo.setPrototypeDisplayValue("XXXXXXXXXXXXXXXXX");
         
+        dobChooser.setPreferredSize(typeCombo.getPreferredSize());
+
         setLayout(new BorderLayout());
         layoutComponents();
     }

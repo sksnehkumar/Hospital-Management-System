@@ -3,7 +3,7 @@ package model;
 
 
 public enum StaffType {
-    Doctor,
+    Medical,
     ParaMedical,
     NonMedical
 }

@@ -1,5 +1,5 @@
 
-package view;
+package view.login;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
@@ -10,6 +10,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -18,6 +21,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import org.apache.commons.codec.digest.DigestUtils;
 
 public class LoginDialog extends JDialog {
     private JTextField userField;
@@ -26,6 +30,7 @@ public class LoginDialog extends JDialog {
     private JButton cancelButton;
     private JPanel detailsPanel;
     private JPanel buttonsPanel;
+    private LoginListener listener;
     
     public LoginDialog(JFrame parent) {
         super(parent, "Login", true);
@@ -39,7 +44,13 @@ public class LoginDialog extends JDialog {
         
         loginButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                dispose();
+                String username = userField.getText();
+                String password = DigestUtils.sha256Hex(new String(passField.getPassword()));
+                
+                LoginEvent ev = new LoginEvent(this, username, password);
+                if(listener != null) {
+                    listener.loginPerformed(ev);
+                }
             }
             
         });
@@ -106,6 +117,10 @@ public class LoginDialog extends JDialog {
         buttonsPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
         buttonsPanel.add(loginButton, gbc);
         buttonsPanel.add(cancelButton, gbc);
+    }
+
+    public void setListener(LoginListener listener) {
+        this.listener = listener;
     }
     
 }
