@@ -46,14 +46,14 @@ public class LoginDialog extends JDialog {
         
         cancelButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                System.exit(0);
+                parent.dispose();
             }
             
         });
         
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
-                System.exit(0);
+                parent.dispose();
             }
         });
         
@@ -73,39 +73,39 @@ public class LoginDialog extends JDialog {
         
         //detailsPanel
         detailsPanel.setLayout(new GridBagLayout());
-        GridBagConstraints pc = new GridBagConstraints();
+        GridBagConstraints gbc = new GridBagConstraints();
         
         //First Row
-        pc.gridy = 0;
-        pc.weightx = 1;
-        pc.weighty = 1;
+        gbc.gridy = 0;
+        gbc.weightx = 1;
+        gbc.weighty = 1;
         
-        pc.gridx = 0;
-        pc.anchor = GridBagConstraints.LAST_LINE_END;
-        pc.insets = new Insets(0, 0, 0, 5);
-        detailsPanel.add(new JLabel("User: "),pc);
+        gbc.gridx = 0;
+        gbc.anchor = GridBagConstraints.LAST_LINE_END;
+        gbc.insets = new Insets(0, 0, 0, 5);
+        detailsPanel.add(new JLabel("User: "),gbc);
         
-        pc.gridx++;
-        pc.anchor = GridBagConstraints.LAST_LINE_START;
-        detailsPanel.add(userField, pc);
+        gbc.gridx++;
+        gbc.anchor = GridBagConstraints.LAST_LINE_START;
+        detailsPanel.add(userField, gbc);
         
         //Second Row
-        pc.gridy++;
+        gbc.gridy++;
         
-        pc.gridx = 0;
-        pc.anchor = GridBagConstraints.LINE_END;
-        pc.insets = new Insets(0, 0, 0, 5);
-        detailsPanel.add(new JLabel("Password: "), pc);
+        gbc.gridx = 0;
+        gbc.anchor = GridBagConstraints.LINE_END;
+        gbc.insets = new Insets(0, 0, 0, 5);
+        detailsPanel.add(new JLabel("Password: "), gbc);
         
-        pc.gridx++;
-        pc.anchor = GridBagConstraints.LINE_START;
-        detailsPanel.add(passField, pc);
+        gbc.gridx++;
+        gbc.anchor = GridBagConstraints.LINE_START;
+        detailsPanel.add(passField, gbc);
         
         //buttonsPanel
         buttonsPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         buttonsPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
-        buttonsPanel.add(loginButton, pc);
-        buttonsPanel.add(cancelButton, pc);
+        buttonsPanel.add(loginButton, gbc);
+        buttonsPanel.add(cancelButton, gbc);
     }
     
 }

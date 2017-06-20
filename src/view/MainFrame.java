@@ -2,15 +2,13 @@
 package view;
 
 import java.awt.BorderLayout;
-import javax.swing.ImageIcon;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.UIManager;
 
 public class MainFrame extends JFrame {
     private LoginDialog loginDialog;
-    private ImageIcon image;
-    private JLabel imageLabel;
+    private BackgroundPanel bgPanel;
+    private ProfilePanel profilePanel;
     
     public MainFrame() {
         super("Hospital Management System");
@@ -27,16 +25,15 @@ public class MainFrame extends JFrame {
         }
         
         loginDialog = new LoginDialog(this);
-        image = new ImageIcon(getClass().getResource("/image/hospital.jpg"));
-        imageLabel = new JLabel(image);
-        
+        bgPanel = new BackgroundPanel();
+        profilePanel = new ProfilePanel();
         
         
         
         setLayout(new BorderLayout());
-        add(imageLabel, BorderLayout.CENTER);
+        add(profilePanel, BorderLayout.CENTER);
         
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(800, 600);
         setResizable(false);
         setLocationRelativeTo(null);
