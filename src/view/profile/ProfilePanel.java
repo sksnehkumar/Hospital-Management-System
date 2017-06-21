@@ -1,11 +1,10 @@
 
-package view;
+package view.profile;
 
 import com.toedter.calendar.JDateChooser;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
@@ -15,6 +14,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.sql.Date;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
@@ -31,6 +31,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import model.Department;
+import model.Profile;
 import model.StaffType;
 
 public class ProfilePanel extends JPanel {
@@ -53,6 +54,8 @@ public class ProfilePanel extends JPanel {
     private JButton dummyButton;
     private JPopupMenu profileMenu;
     private JFileChooser fileChooser;
+    private String imagePath;
+    private ProfileListener listener;
     
     public ProfilePanel() {
         nameField = new JTextField(15);
@@ -93,7 +96,8 @@ public class ProfilePanel extends JPanel {
         });
        
         
-        
+        maleRadio.setActionCommand("Male");
+        maleRadio.setActionCommand("Female");
         genderGroup.add(maleRadio);
         genderGroup.add(femaleRadio);
         
@@ -112,6 +116,29 @@ public class ProfilePanel extends JPanel {
         deptCombo.setPrototypeDisplayValue("XXXXXXXXXXXXXXXXX");
         
         dobChooser.setPreferredSize(typeCombo.getPreferredSize());
+        
+        dummyButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String name = nameField.getText();
+                String profileImage = imagePath;
+                String gender = genderGroup.getSelection().getActionCommand();
+                Date dob = new Date(dobChooser.getDate().getTime());
+                String address = addressField.getText();
+                String contact = contactField.getText();
+                String mail = mailField.getText();
+                String qualifications = qualificationsField.getText();
+                String id = idField.getText();
+                StaffType type = (StaffType) typeCombo.getSelectedItem();
+                Department dept = (Department) deptCombo.getSelectedItem();
+                
+                Profile profile = new Profile(name, profileImage, gender, dob, address, contact, mail, qualifications, id, type, dept);
+                ProfileEvent ev = new ProfileEvent(this, profile);
+                if(listener != null) {
+                    listener.profileEdited(ev);
+                }
+
+            }
+    });
 
         setLayout(new BorderLayout());
         layoutComponents();
@@ -332,7 +359,8 @@ public class ProfilePanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 if(fileChooser.showOpenDialog(ProfilePanel.this) == JFileChooser.APPROVE_OPTION) {
                     File file = fileChooser.getSelectedFile();
-                    ImageIcon image = new ImageIcon(file.getAbsolutePath());
+                    imagePath = file.getAbsolutePath();
+                    ImageIcon image = new ImageIcon(imagePath);
                     profileLabel.setIcon(resizeImage(image));
                 }
             }
@@ -344,5 +372,27 @@ public class ProfilePanel extends JPanel {
         Image tmpImage = profileImage.getImage();
         Image scaledImage = tmpImage.getScaledInstance(150, 150, Image.SCALE_SMOOTH);
         return new ImageIcon(scaledImage);
+    }
+    
+    public void setProfileListener(ProfileListener listener) {
+        this.listener = listener;
+    }
+
+    public void setProfile(Profile profile) {
+        nameField.setText(profile.getName());
+        ImageIcon image = new ImageIcon(profile.getProfileImage());
+        profileLabel.setIcon(resizeImage(image));
+        if(profile.getGender() == "Male")
+            maleRadio.setSelected(true);
+        else
+            femaleRadio.setSelected(true);
+        dobChooser.setDate(new java.util.Date(profile.getDob().getTime()));
+        addressField.setText(profile.getAddress());
+        contactField.setText(profile.getContact());
+        mailField.setText(profile.getMail());
+        qualificationsField.setText(profile.getQualifications());
+        idField.setText(profile.getId());
+        typeCombo.setSelectedItem(profile.getType());
+        deptCombo.setSelectedItem(profile.getDept());
     }
 }

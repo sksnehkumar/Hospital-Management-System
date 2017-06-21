@@ -10,9 +10,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -55,6 +52,7 @@ public class LoginDialog extends JDialog {
             
         });
         
+        
         cancelButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 parent.dispose();
@@ -72,6 +70,7 @@ public class LoginDialog extends JDialog {
         setResizable(false);
         setLocationRelativeTo(parent);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        getRootPane().setDefaultButton(loginButton);
         
         setLayout(new BorderLayout());
         layoutComponents();
