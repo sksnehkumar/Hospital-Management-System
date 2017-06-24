@@ -1,7 +1,9 @@
 
 package controller;
 
+import java.util.List;
 import model.Database;
+import model.Patient;
 import model.Profile;
 
 public class Controller {
@@ -38,5 +40,17 @@ public class Controller {
 
     public Profile loadProfile(String username) {
         return master.loadProfile(username);
+    }
+    
+    public void savePatient(Patient patient) {
+        master.savePatient(patient);
+    }
+
+    public List<Patient> loadPatientRecords() {
+        return master.loadPatientRecords();
+    }
+    
+    public int getNextPatNo() {
+        return master.getNextPatNo();
     }
 }

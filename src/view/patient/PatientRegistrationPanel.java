@@ -1,13 +1,13 @@
 
 package view.patient;
 
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.BorderFactory;
+import java.sql.Date;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -17,14 +17,16 @@ import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.SpinnerModel;
+import javax.swing.SpinnerNumberModel;
 import model.BloodGroup;
 import model.Company;
+import model.Patient;
 
-public class patientRegPanel extends JPanel {
+public class PatientRegistrationPanel extends JPanel {
     
-    private JLabel idLabel;
-    private JTextField idField;
+    private PatientListener listener;
+    private JLabel patNoLabel;
+    private JTextField patNoField;
     private JLabel nameLabel;
     private JTextField nameField;
     private JRadioButton maleRadio;
@@ -56,13 +58,14 @@ public class patientRegPanel extends JPanel {
     private final JLabel insNoLabel;
     private final JScrollPane identifiersScroll;
     private final JScrollPane addressScroll;
-    private final JLabel attachmentLabel;
-    private final JPanel attachmentPanel;
+    private final JButton saveButton;
+    private final JButton cancelButton;
+    private final SpinnerNumberModel ageModel;
+    
 
-    public patientRegPanel() {
-        
-        idLabel = new JLabel("Patient ID: ");
-        idField = new JTextField(15);
+    public PatientRegistrationPanel() {
+        patNoLabel = new JLabel("Patient No: ");
+        patNoField = new JTextField(15);
         nameLabel = new JLabel("Name: ");
         nameField = new JTextField(15);
         genderLabel = new JLabel("Gender: ");
@@ -70,7 +73,8 @@ public class patientRegPanel extends JPanel {
         femaleRadio = new JRadioButton("Female");
         genderGroup = new ButtonGroup();
         ageLabel = new JLabel("Age: ");
-        ageSpinner = new JSpinner();
+        ageModel = new SpinnerNumberModel(25, 1, 120, 1);
+        ageSpinner = new JSpinner(ageModel);
         statusLabel = new JLabel("Marital Status: ");
         unmarriedRadio = new JRadioButton("Unmarried");
         marriedRadio = new JRadioButton("Married");
@@ -94,45 +98,130 @@ public class patientRegPanel extends JPanel {
         compCombo = new JComboBox();
         insNoLabel = new JLabel("Insurance Number: ");
         insNoField = new JTextField(15);
-        attachmentPanel = new JPanel();
-        attachmentLabel = new JLabel("Attachments: ");
+        saveButton = new JButton("Save");
+        cancelButton = new JButton("Cancel");
         
         
+        
+        //Set up genderGroup
         genderGroup.add(maleRadio);
         genderGroup.add(femaleRadio);
+        maleRadio.setSelected(true);
+        maleRadio.setActionCommand("Male");
+        femaleRadio.setActionCommand("Female");
         
+        //Set up statusGroup
         statusGroup.add(marriedRadio);
         statusGroup.add(unmarriedRadio);
         statusGroup.add(othersRadio);
+        marriedRadio.setSelected(true);
+        marriedRadio.setActionCommand("Married");
+        unmarriedRadio.setActionCommand("Unmarried");
+        othersRadio.setActionCommand("Others");
         
-        identifiersArea.setFont(idField.getFont());
-        addressArea.setFont(idField.getFont());
+        //Set font for JTextArea controls
+        identifiersArea.setFont(patNoField.getFont());
+        addressArea.setFont(patNoField.getFont());
         
+        //Set up bloodCombo
         DefaultComboBoxModel bloodModel = new DefaultComboBoxModel();
         for(BloodGroup bg : BloodGroup.values()) {
             bloodModel.addElement(bg);
         }
         bloodCombo.setModel(bloodModel);
         
+        
+        //Set up compCombo
         DefaultComboBoxModel compModel = new DefaultComboBoxModel();
         for(Company comp : Company.values()) {
             compModel.addElement(comp);
         }
         compCombo.setModel(compModel);
         
-        SpinnerModel ageModel = ageSpinner.getModel();
-        ageModel.setValue(25);
-        
+        //Set up insuranceCheck
         insuranceCheck.setSelected(true);
         
+        insuranceCheck.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                boolean isInsured = insuranceCheck.isSelected();
+                compLabel.setEnabled(isInsured);
+                compCombo.setEnabled(isInsured);
+                insNoLabel.setEnabled(isInsured);
+                insNoField.setEnabled(isInsured);
+            }
+        });
         
+        saveButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                int patNo = Integer.parseInt(patNoField.getText());
+                String name = nameField.getText();
+                String gender = genderGroup.getSelection().getActionCommand();
+                int age = (Integer)ageSpinner.getValue();
+                String status = statusGroup.getSelection().getActionCommand();
+                String group = bloodCombo.getSelectedItem().toString();
+                String identifiers = identifiersArea.getText();
+                String address = addressArea.getText();
+                String contact = contactField.getText();
+                String mail = mailField.getText();
+                boolean isInsured = insuranceCheck.isSelected();
+                String comp = null;
+                String insNo = null;
+                if(isInsured) {
+                    comp = compCombo.getSelectedItem().toString();
+                    insNo = insNoField.getText();
+                }
+                
+                Patient newPatient = new Patient(patNo, name, gender, age, status, group, identifiers, address, contact, mail, 
+                        isInsured, comp, insNo, new Date(System.currentTimeMillis()));
+                
+                if(listener != null) {
+                    SaveEvent ev = new SaveEvent(this, newPatient);
+                    listener.patientSaved(ev);
+                }
+                clearForm();
+            }
+            
+        });
+        
+        cancelButton.addActionListener(new ActionListener() { 
+            public void actionPerformed(ActionEvent e) {
+                setVisible(false);
+            }
+             
+        });
+         
+        
+        layoutComponents();
+    }
+    
+    private void clearForm() {
+        
+        nameField.setText("");
+        maleRadio.setSelected(true);
+        ageSpinner.setValue(25);
+        marriedRadio.setSelected(true);
+        bloodCombo.setSelectedIndex(0);
+        identifiersArea.setText("");
+        addressArea.setText("");
+        contactField.setText("");
+        mailField.setText("");
+        insuranceCheck.setSelected(true);
+        compLabel.setEnabled(true);
+        compCombo.setEnabled(true);
+        compCombo.setSelectedIndex(0);
+        insNoLabel.setEnabled(true);
+        insNoField.setEnabled(true);
+        insNoField.setText("");
+    }
+
+    private void layoutComponents() {
         GroupLayout layout = new GroupLayout(this);
         setLayout(layout);
         layout.setAutoCreateGaps(true);
         layout.setAutoCreateContainerGaps(true);
         layout.setHorizontalGroup(layout.createSequentialGroup()
                     .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
-                        .addComponent(idLabel)
+                        .addComponent(patNoLabel)
                         .addComponent(nameLabel)
                         .addComponent(genderLabel)
                         .addComponent(ageLabel)
@@ -144,10 +233,9 @@ public class patientRegPanel extends JPanel {
                         .addComponent(mailLabel)
                         .addComponent(insuranceLabel)
                         .addComponent(compLabel)
-                        .addComponent(insNoLabel)
-                    )
+                        .addComponent(insNoLabel))
                     .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)         
-                        .addComponent(idField)
+                        .addComponent(patNoField)
                         .addComponent(nameField)
                         .addGroup(layout.createSequentialGroup()
                             .addComponent(maleRadio)
@@ -164,19 +252,17 @@ public class patientRegPanel extends JPanel {
                         .addComponent(mailField)
                         .addComponent(insuranceCheck)
                         .addComponent(compCombo)
-                        .addComponent(insNoField)
-                    )
-                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING) 
-                        .addComponent(attachmentPanel)
-                    )
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
+                            .addComponent(insNoField)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(saveButton)
+                                .addComponent(cancelButton)))
+                        )
         );
-        layout.setVerticalGroup(
-                layout.createSequentialGroup()
-                    
+        layout.setVerticalGroup(layout.createSequentialGroup()
                     .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                        .addComponent(idLabel)
-                        .addComponent(idField)
-                    )
+                        .addComponent(patNoLabel)
+                        .addComponent(patNoField))
                     .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                         .addComponent(nameLabel)
                         .addComponent(nameField))
@@ -216,25 +302,88 @@ public class patientRegPanel extends JPanel {
                     .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                         .addComponent(insNoLabel)
                         .addComponent(insNoField))
+                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                        .addComponent(saveButton)
+                        .addComponent(cancelButton))
                     
         );
-        
-        
-        
-        insuranceCheck.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                boolean isInsured = insuranceCheck.isSelected();
-                compLabel.setEnabled(isInsured);
-                compCombo.setEnabled(isInsured);
-                insNoLabel.setEnabled(isInsured);
-                insNoField.setEnabled(isInsured);
-            }
-            
-        });
+    }
+
+    public void setListener(PatientListener listener) {
+        this.listener = listener;
     }
     
-    
+    public void setVisible(boolean b, boolean editable) {
+        super.setVisible(b);
+        if(editable) {
+            patNoLabel.setEnabled(false);
+            patNoField.setEnabled(false);
+            nameField.setEnabled(true);
+            maleRadio.setEnabled(true);
+            femaleRadio.setEnabled(true);
+            ageSpinner.setEnabled(true);
+            marriedRadio.setEnabled(true);
+            unmarriedRadio.setEnabled(true);
+            othersRadio.setEnabled(true);
+            bloodCombo.setEnabled(true);
+            identifiersArea.setEnabled(true);
+            addressArea.setEnabled(true);
+            contactField.setEnabled(true);
+            mailField.setEnabled(true);
+            insuranceCheck.setEnabled(true);
+            compCombo.setEnabled(true);
+            insNoField.setEnabled(true);
+            nameLabel.setEnabled(true);
+            genderLabel.setEnabled(true);
+            ageLabel.setEnabled(true);
+            statusLabel.setEnabled(true);
+            bloodLabel.setEnabled(true);
+            identifiersLabel.setEnabled(true);
+            addressLabel.setEnabled(true);
+            contactLabel.setEnabled(true);
+            mailLabel.setEnabled(true);
+            insuranceLabel.setEnabled(true);
+            compLabel.setEnabled(true);
+            insNoLabel.setEnabled(true);
+        }
+        else
+        {
+            
+            patNoLabel.setEnabled(false);
+            patNoField.setEnabled(false);
+            nameField.setEnabled(false);
+            maleRadio.setEnabled(false);
+            femaleRadio.setEnabled(false);
+            ageSpinner.setEnabled(false);
+            marriedRadio.setEnabled(true);
+            unmarriedRadio.setEnabled(true);
+            othersRadio.setEnabled(true);
+            bloodCombo.setEnabled(false);
+            identifiersArea.setEnabled(true);
+            addressArea.setEnabled(true);
+            contactField.setEnabled(true);
+            mailField.setEnabled(true);
+            insuranceCheck.setEnabled(true);
+            compCombo.setEnabled(true);
+            insNoField.setEnabled(true);
+            nameLabel.setEnabled(false);
+            genderLabel.setEnabled(false);
+            ageLabel.setEnabled(false);
+            statusLabel.setEnabled(true);
+            bloodLabel.setEnabled(false);
+            identifiersLabel.setEnabled(false);
+            addressLabel.setEnabled(true);
+            contactLabel.setEnabled(true);
+            mailLabel.setEnabled(true);
+            insuranceLabel.setEnabled(true);
+            compLabel.setEnabled(true);
+            insNoLabel.setEnabled(true);
+        }
+    }
 
+    public void setNextPatNo(int nextPatNo) {
+        patNoField.setText("" + nextPatNo);
+    }
     
     
 }
